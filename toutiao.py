@@ -5,7 +5,6 @@ page = ChromiumPage()
 ac = Actions(page)
 page.set.window.max()
 
-
 def getArticleUrl(navItem,scrollNum =1):
     page.get('https://www.toutiao.com/')
     page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul').ele('text:{}'.format(navItem)).click()
@@ -21,7 +20,7 @@ def getArticleUrl(navItem,scrollNum =1):
         url = page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[2]/div[{}]/div/div/a'.format(i+1)).link
         articleUrlList.append(url)
         page.wait(1)
-    print('自动获取文章完毕')
+    print('自动获取文章完毕,共采集：{}  条文章'.format(scrollNum*15))
     return articleUrlList
 
 
@@ -31,7 +30,7 @@ def getArticle(url):
     title = page.ele('@class=article-content').ele('tag:h1').text
     img = page.ele('tag:article').eles('tag:img')
     imgList = img.get.links()
-    print('获取文章完毕')
+    print('获取文章标题、内容、图片完成')
     return connect,title,imgList
 
 def aiRewrite(article):
@@ -62,7 +61,7 @@ def aiRewrite(article):
     page.wait.ele_hidden((page.ele('@id=sendBtn')).next(),timeout=1200)
     page.wait(5)
     page.ele('@id:chat-id-').eles('tag:span')[3].click()
-    print('洗稿完成')
+    print('AI洗稿完成')
 
 def articleContrast(originalText):
     page.get('http://www.wenpipi.com/sim')
@@ -75,10 +74,13 @@ def articleContrast(originalText):
     page.ele('@id=animation-container').click()
     page.wait(2)
     result = page.ele('xpath://*[@id="judgeDivId"]/font[2]/strong').text
+    print('文章相似度对比完成')
     return result
 
-articleUrlList = getArticleUrl(navItem='体育',scrollNum=1)
+articleUrlList = getArticleUrl(navItem='热点',scrollNum=1)
 # url = 'https://www.toutiao.com/article/7414787250170446375/?log_from=443710d388bfc_1726463928376'
+
+successNum = 0
 for url in articleUrlList:
     article,title,imgList = getArticle(url)
     aiRewrite(article)
@@ -116,5 +118,6 @@ for url in articleUrlList:
         page.wait(2)
         ac.type(Keys.CTRL_V)
         page.wait(2)
-        # print(NUM)
         imgNum = imgNum + 3
+    successNum = successNum + 1
+    print('已经成功写入头条 {} 条文章'.format(successNum))
