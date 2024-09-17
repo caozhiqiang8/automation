@@ -28,7 +28,6 @@ def get_radio_value():
 
 v = tk.StringVar()
 v.set('1')
-
 for girl, num in radio_data:
     b = tk.Radiobutton(root, text=girl, variable=v, value=num,command=get_radio_value)
     b.pack(anchor="w",side='left')
