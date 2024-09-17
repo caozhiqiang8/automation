@@ -5,14 +5,16 @@ page = ChromiumPage()
 ac = Actions(page)
 page.set.window.max()
 
-def getArticleUrl(navItem,scrollNum =1):
+def getArticleUrl(navItem,scrollNum = 0):
+    print('开始自动采集 {} 文章......'.format(navItem))
     page.get('https://www.toutiao.com/')
     page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul').ele('text:{}'.format(navItem)).click()
     # page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul/li[9]/div[2]/ul').ele('text:{}'.format(navItem)).click()
     page.wait(3)
-    for i in range(scrollNum):
-        page.scroll.to_bottom()
-        page.wait(3)
+    if scrollNum > 0:
+        for i in range(scrollNum):
+            page.scroll.to_bottom()
+            page.wait(3)
     page.wait(3)
     articleCard  = page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[2]').children()
     articleUrlList = []
@@ -20,20 +22,22 @@ def getArticleUrl(navItem,scrollNum =1):
         url = page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[2]/div[{}]/div/div/a'.format(i+1)).link
         articleUrlList.append(url)
         page.wait(1)
-    print('自动获取文章完毕,共采集：{}  条文章'.format(scrollNum*15))
+    print('{} 文章采集成功,共 {} 条'.format(navItem,(scrollNum+1)*15))
     return articleUrlList
 
 
 def getArticle(url):
+    print('开始获取文章内容......')
     page.get(url)
     connect = page.ele('tag:article').text
     title = page.ele('@class=article-content').ele('tag:h1').text
     img = page.ele('tag:article').eles('tag:img')
     imgList = img.get.links()
-    print('获取文章标题、内容、图片完成')
-    return connect,title,imgList
+    print('文章标题、内容、图片获取成功')
+    return connect,title,imgList[:8]
 
 def aiRewrite(article):
+    print('开始AI改写......')
     page.get('https://yiyan.baidu.com/')
     page.set.load_mode.normal()
     page.ele('.yc-editor-paragraph').input(article)
@@ -41,6 +45,7 @@ def aiRewrite(article):
     page.wait(5)
     page.wait.ele_hidden((page.ele('@id=sendBtn')).next(),timeout=1200)
     page.wait(3)
+    print('开始输入AI指令......')
     aiPromat = '''
     背景：我需要根据上述文章进行仿写，目标是保持原文的意思不变，同时确保事件过程生动精彩，结果客观真实。该任务要求将文章重新编写成具有原创性的新闻报道，避免被识别为AI创作。
     角色：希望你扮演一位资深新闻编辑，擅长用专业的新闻语言重新表达信息，确保逻辑清晰，层层递进，同时保持文章的原始意思。
@@ -59,12 +64,16 @@ def aiRewrite(article):
     ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
     page.wait(5)
     page.wait.ele_hidden((page.ele('@id=sendBtn')).next(),timeout=1200)
-    page.wait(5)
+    page.wait(3)
     page.ele('@id:chat-id-').eles('tag:span')[3].click()
-    print('AI洗稿完成')
+    print('AI洗稿成功')
 
 def articleContrast(originalText):
+    print('开始文章检测......')
     page.get('http://www.wenpipi.com/sim')
+    updateBox = page.ele('@id=TurnOnScreenDialogBoxCloseId')
+    if updateBox:
+        updateBox.click()
     page.wait(2)
     page.ele('@id=content2').click()
     ac.type(Keys.CTRL_V)
@@ -74,19 +83,23 @@ def articleContrast(originalText):
     page.ele('@id=animation-container').click()
     page.wait(2)
     result = page.ele('xpath://*[@id="judgeDivId"]/font[2]/strong').text
-    print('文章相似度对比完成')
+    print('文章检测完成')
     return result
 
-articleUrlList = getArticleUrl(navItem='热点',scrollNum=1)
+articleUrlList = getArticleUrl(navItem='体育')
 # url = 'https://www.toutiao.com/article/7414787250170446375/?log_from=443710d388bfc_1726463928376'
 
 successNum = 0
 for url in articleUrlList:
     article,title,imgList = getArticle(url)
+    page.wait(2)
     aiRewrite(article)
+    page.wait(2)
     # page.ele('@id:chat-id-').eles('tag:span')[3].click()
     articleContrast(article)
-
+    page.wait(2)
+    print('开始头条写入文章......')
+    page.wait(2)
     page.get('https://mp.toutiao.com/profile_v4/index')
     page.wait(2)
     page.ele('@class=byte-menu-item').click()
@@ -98,6 +111,7 @@ for url in articleUrlList:
     page.wait(2)
     # title = '炸裂！沈阳一女子挑衅骚扰民警，指着生殖器:你那个多长给我看看'
     page.ele('xpath://*[@id="root"]/div/div[1]/div/div[1]/div[3]/div/div/div[2]/div/div/div/textarea').input(title)
+    print('开始插入图片......')
     # imgList = ['https://p3-sign.toutiaoimg.com/tos-cn-i-axegupay5k/b6dda7f3fe544f15887c51944cadc957~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=FAqPSY9dFObfwUKKt7qt%2FJLkhW8%3D', 'https://p3-sign.toutiaoimg.com/tos-cn-i-6w9my0ksvp/08bcf3ba4bdd4adba9d9870dd66a733d~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=xr9aoRi0Cq37VO5PiB629n2rVtU%3D', 'https://p3-sign.toutiaoimg.com/tos-cn-i-6w9my0ksvp/f3762cd2e664434aa8474b260fc913ac~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=8yuxaUoXLmBzN8LMqCL0icvL5lc%3D', 'https://p26-sign.toutiaoimg.com/tos-cn-i-6w9my0ksvp/f3762cd2e664434aa8474b260fc913ac~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=6jfa172ChEqryJi1BtGmq3xDjkY%3D', 'https://p3-sign.toutiaoimg.com/tos-cn-i-6w9my0ksvp/9613da2c690e47b2a3cb0d71f7be6a92~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=MloS4Z51yk5Zr1ZOVYyvgXFlkns%3D', 'https://p3-sign.toutiaoimg.com/tos-cn-i-6w9my0ksvp/9c9c893310f047b5bfc5d35dbda77ceb~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=G%2F5Srg5ZHAchdGndThNaFIpRdog%3D', 'https://p3-sign.toutiaoimg.com/tos-cn-i-6w9my0ksvp/fed33658cedc47f1bc9a64eb8e20bd38~noop.image?_iz=58558&from=article.pc_detail&lk3s=953192f4&x-expires=1727009033&x-signature=ICUYy9cvhwzYPdl%2FEBIShsZ8gmI%3D']
     imgNum=4
     for img in imgList:
@@ -120,4 +134,4 @@ for url in articleUrlList:
         page.wait(2)
         imgNum = imgNum + 3
     successNum = successNum + 1
-    print('已经成功写入头条: {} 条文章'.format(successNum))
+    print('头条成功写入: {} 条'.format(successNum))
