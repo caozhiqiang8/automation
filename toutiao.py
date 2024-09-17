@@ -120,4 +120,4 @@ for url in articleUrlList:
         page.wait(2)
         imgNum = imgNum + 3
     successNum = successNum + 1
-    print('已经成功写入头条 {} 条文章'.format(successNum))
+    print('已经成功写入头条: {} 条文章'.format(successNum))
