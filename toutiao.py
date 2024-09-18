@@ -1,4 +1,4 @@
-from DrissionPage import ChromiumPage,ChromiumOptions
+from DrissionPage import ChromiumPage
 from DrissionPage.common import Actions,Keys
 
 page = ChromiumPage()
@@ -8,14 +8,15 @@ page.set.window.max()
 def getArticleUrl(navItem,scrollNum = 0):
     print('开始自动采集 {} 文章......'.format(navItem))
     page.get('https://www.toutiao.com/')
+    page.wait(1)
+    page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul/li[9]/div[1]').click()
+    page.wait(2)
     page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul').ele('text:{}'.format(navItem)).click()
-    # page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul/li[9]/div[2]/ul').ele('text:{}'.format(navItem)).click()
-    page.wait(3)
+    page.wait(2)
     if scrollNum > 0:
         for i in range(scrollNum):
             page.scroll.to_bottom()
-            page.wait(3)
-    page.wait(3)
+            page.wait(2)
     articleCard  = page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[2]').children()
     articleUrlList = []
     for i in range(len(articleCard)):
@@ -29,9 +30,13 @@ def getArticleUrl(navItem,scrollNum = 0):
 def getArticle(url):
     print('开始获取文章内容......')
     page.get(url)
+    page.wait(1)
     connect = page.ele('tag:article').text
+    page.wait(1)
     title = page.ele('@class=article-content').ele('tag:h1').text
+    page.wait(1)
     img = page.ele('tag:article').eles('tag:img')
+    page.wait(1)
     imgList = img.get.links()
     print('文章标题、内容、图片获取成功')
     return connect,title,imgList[:8]
@@ -41,6 +46,7 @@ def aiRewrite(article):
     page.get('https://yiyan.baidu.com/')
     page.set.load_mode.normal()
     page.ele('.yc-editor-paragraph').input(article)
+    page.wait(1)
     ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
     page.wait(5)
     page.wait.ele_hidden((page.ele('@id=sendBtn')).next(),timeout=1200)
@@ -86,8 +92,13 @@ def articleContrast(originalText):
     print('文章检测完成')
     return result
 
-articleUrlList = getArticleUrl(navItem='体育')
-# url = 'https://www.toutiao.com/article/7414787250170446375/?log_from=443710d388bfc_1726463928376'
+lableLlist = {1:'热点',2:'娱乐',3:'体育',4:'军事',5:'历史',6:'财经'}
+print('文章领域选择  {}'.format(lableLlist))
+inputLable = int(input('请选择需要采集的文章领域(输入数字)：'))
+navItem = lableLlist[inputLable]
+
+articleUrlList = getArticleUrl(navItem = navItem)
+# articleUrlList = ['https://www.toutiao.com/article/7414787250170446375/?log_from=443710d388bfc_1726463928376']
 
 successNum = 0
 for url in articleUrlList:
