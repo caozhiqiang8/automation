@@ -11,19 +11,15 @@ def nowTime():
     return now
 
 def secretKey():
-
-    hostname = os.popen('hostname').read().strip()
-    conn = sqlite3.connect('automation.db')
-    cursor = conn.cursor()
-    firstSql = '''
-    select * from host_key where  host='{}' and user_key != ''
-    '''.format(hostname)
-    firstResult = cursor.execute(firstSql).fetchall()
-
-    if firstResult:
+    with open(r'cdk.txt', 'r', encoding='utf-8') as file:
+        cdk = file.read()
+    if cdk :
+        hostname = os.popen('hostname').read().strip()
+        conn = sqlite3.connect('automation.db')
+        cursor = conn.cursor()
         sql = '''
-            select * from host_key where  host='{}' and key = user_key
-            '''.format(hostname)
+          select * from host_key where  host='{}' and key = '{}'
+            '''.format(hostname, cdk)
         result = cursor.execute(sql).fetchall()
         if result:
             return ''
@@ -32,23 +28,9 @@ def secretKey():
             page.wait(10)
             sys.exit()
     else:
-        card = input('请输入卡密:')
-        sql = '''
-            select * from host_key where  host='{}' and key = '{}'
-                            '''.format(hostname,card)
-        result = cursor.execute(sql).fetchall()
-        if result:
-            updateSql = '''
-                    update host_key set user_key = '{}'  where host = '{}'
-                    '''.format(card, hostname)
-            cursor.execute(updateSql)
-            conn.commit()
-            return ''
-        else:
-            print('[{}] 没有权限，请联系作者：syy180806'.format(nowTime()))
-            page.wait(10)
-            sys.exit()
-
+        print('[{}] 没有权限，请联系作者：syy180806'.format(nowTime()))
+        page.wait(10)
+        sys.exit()
     cursor.close()
     conn.close()
 
@@ -81,17 +63,44 @@ def getArticleUrl(navItem,scrollNum = 0):
 
 def getArticle(url):
     print('[{}] 开始获取文章内容......'.format(nowTime()))
-    page.get(url)
-    page.wait(1)
-    connect = page.ele('tag:article').text
-    page.wait(1)
-    title = page.ele('@class=article-content').ele('tag:h1').text
-    page.wait(1)
-    img = page.ele('tag:article').eles('tag:img')
-    page.wait(1)
-    imgList = img.get.links()
-    print('[{}] 文章标题、内容、图片获取成功'.format(nowTime()))
-    return connect,title,imgList[:8]
+    if 'https://www.toutiao.com' in url :
+        page.get(url)
+        page.wait(1)
+        connect = page.ele('tag:article').text
+        page.wait(1)
+        title = page.ele('@class=article-content').ele('tag:h1').text
+        page.wait(1)
+        img = page.ele('tag:article').eles('tag:img')
+        imgList = img.get.links()
+        page.wait(1)
+        print('[{}] 文章标题、内容、图片获取成功'.format(nowTime()))
+        return connect, title, imgList[:8]
+    elif 'https://www.163.com/' in url:
+        page.get(url)
+        page.wait(1)
+        connect = page.ele('xpath://*[@id="content"]/div[2]').text
+        page.wait(1)
+        title = page.ele('@class=post_title').text
+        page.wait(1)
+        img = page.ele('@class:post_body').eles('tag:img')
+        imgList = img.get.links()
+        page.wait(1)
+        print('[{}] 文章标题、内容、图片获取成功'.format(nowTime()))
+        return connect, title, imgList[:8]
+    elif 'https://www.sohu.com/' in url :
+        page.get(url)
+        page.wait(1)
+        connect = page.ele('@id=mp-editor').text
+        page.wait(1)
+        title = page.ele('@class=title-info-title').text
+        page.wait(1)
+        img = page.ele('@id=mp-editor').eles('tag:img')
+        imgList = img.get.links()
+        page.wait(1)
+        print('[{}] 文章标题、内容、图片获取成功'.format(nowTime()))
+        return connect, title, imgList[:8]
+    else:
+        return 5,5,5
 
 def aiRewrite(article):
     page.get('https://yiyan.baidu.com/')
@@ -150,13 +159,22 @@ if __name__=='__main__':
     if inputLable > 6:
         inputLable = 1
     elif inputLable == 0 :
-        pass
-    navItem = lableLlist[inputLable]
-    articleUrlList = getArticleUrl(navItem = navItem)
+        with open(r'文章链接.txt', 'r', encoding='utf-8') as file:
+            url = file.read()
+        articleUrlList = url.splitlines()
+    else:
+        navItem = lableLlist[inputLable]
+        articleUrlList = getArticleUrl(navItem = navItem)
+
     successNum = 0
+    contrastNum = 0
     for url in articleUrlList:
         article,title,imgList = getArticle(url)
+        print(title,article,imgList)
         page.wait(1)
+        if article == 5:
+            print('[{}] 链接暂时不支持，自动跳过'.format(nowTime()))
+            continue
         aiRewrite(article)
         page.wait(1)
 
@@ -164,8 +182,15 @@ if __name__=='__main__':
             firm = articleContrast(article)
             if firm == '原创' or firm =='模仿(伪原创)':
                 print('[{}] 文章检测完成'.format(nowTime()))
+                contrastNum = 0
                 break
+            contrastNum+=1
             page.wait(1)
+
+        if contrastNum > 4:
+            print('[{}] 文章3次未通过检测自动跳过'.format(nowTime()))
+            contrastNum = 0
+            continue
 
         print('[{}] 开始头条写入文章......'.format(nowTime()))
         page.wait(1)
@@ -185,23 +210,27 @@ if __name__=='__main__':
         page.wait(1)
         page.ele('xpath://*[@id="root"]/div/div[1]/div/div[1]/div[3]/div/div/div[2]/div/div/div/textarea').input(title)
         print('[{}] 开始插入图片......'.format(nowTime()))
-        imgNum=4
-        for img in imgList:
-            newpage = page.new_tab(img)
-            newpage.wait(1)
-            newpage.ele('tag:img').click()
-            new_ac = Actions(newpage)
-            new_ac.type(Keys.CTRL_C)
-            newpage.wait(1)
-            newpage.close()
-            newpage.wait(1)
-            if imgNum > len(page.ele('@class:ProseMirror').children()):
-                imgNum = len(page.ele('@class:ProseMirror').children())
-            page.ele('@class:ProseMirror').child(imgNum).click.at(0,0)
-            ac.key_down(Keys.HOME).key_up(Keys.HOME)
-            page.wait(1)
-            ac.type(Keys.CTRL_V)
-            page.wait(1)
-            imgNum = imgNum + 3
-        successNum = successNum + 1
+        imgNum = 4
+        if len (imgList) >0:
+            for img in imgList:
+                newpage = page.new_tab(img)
+                newpage.wait(1)
+                newpage.ele('tag:img').click()
+                new_ac = Actions(newpage)
+                new_ac.type(Keys.CTRL_C)
+                newpage.wait(1)
+                newpage.close()
+                newpage.wait(1)
+                if imgNum > len(page.ele('@class:ProseMirror').children()):
+                    imgNum = len(page.ele('@class:ProseMirror').children())
+                page.ele('@class:ProseMirror').child(imgNum).click.at(0,0)
+                ac.key_down(Keys.HOME).key_up(Keys.HOME)
+                page.wait(1)
+                ac.type(Keys.CTRL_V)
+                page.wait(1)
+                imgNum = imgNum + 3
+        else:
+            pass
+        successNum += 1
+
         print('[{}] 头条成功写入: {} 条'.format(nowTime(),successNum))

@@ -22,7 +22,9 @@ import os
 # else:
 #     print("不存在")
 #
-print('''
-[0]自己输入文章链接 [1]热点 [2]娱乐 [3]体育 [4]军事 [5]历史 [6]财经
-''')
-inputLable = int(input('请选择需要采集的文章领域(输入数字,如果不输入默认热点)：'))
+with open(r'文章链接.txt', 'r', encoding='utf-8') as file:
+    cdk = file.read()
+
+print(cdk)
+urlList = cdk.splitlines()
+print(urlList)
