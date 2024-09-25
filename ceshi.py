@@ -3,35 +3,36 @@ import os
 from DrissionPage import ChromiumPage
 from DrissionPage.common import Actions,Keys
 import re
-
+import   json
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+page = ChromiumPage()
+saveProse = page.ele('xpath://*[@id="root"]/div/div[1]/div/div[3]/div/div[1]/span[2]').text
+print(saveProse)
+while saveProse != '草稿已保存':
+    page.wait(1)
+    print('等待')
+print(saveProse)
 # page = ChromiumPage()
-# url = 'https://a.mp.uc.cn/article.html?uc_param_str=frdnsnpfvecpntnwprdssskt&wm_aid=630a5e57226e49b0b5c60ec8fdd09517'
-# page.get(url)
-# connect = page.ele('xpath://*[@id="react_app_content_id"]/div[3]/div[2]').text
-# title = page.ele('xpath://*[@id="react_app_content_id"]/div[3]/h1').text
-# img = page.ele('xpath://*[@id="react_app_content_id"]/div[3]/div[2]').eles('tag:img')
-# imgList = img.get.links()
-# print(title)
-# print(connect)
-# print(imgList)
+# lableLlist = {0: '自己输入文章链接', 1: '热点', 2: '娱乐', 3: '体育', 4: '军事', 5: '历史', 6: '财经'}
+# navItem = lableLlist[1]
+# scrollNum = 0
+#
+# page.get('https://www.toutiao.com/')
+#
+# page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul/li[9]/div[1]').click()
+# page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul').ele('text:{}'.format(navItem)).click()
+# if scrollNum > 0:
+#     for i in range(scrollNum):
+#         page.scroll.to_bottom()
+#         page.wait(1)
+# dengdai = page.ele('@class=feed-m-top-refresh')
+# page.wait.ele_hidden(dengdai)
+# articleCard  = page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[2]').children()
+# print(articleCard)
+# articleUrlList = []
+# for i in range(len(articleCard)):
+#     url = page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[2]/div[{}]/div/div/a'.format(i+1)).link
+#     articleUrlList.append(url)
+# print(articleUrlList)
 
-# page.get(url)
-# connect = page.ele('xpath://*[@id="react_app_content_id"]/div/div[4]/div[2]/p[1]').text
-# title = connect[:30]
-# imgFather = page.ele('xpath://*[@id="gridContainer"]').children()
-# imgList = []
-# for i in imgFather:
-#     img = i.child().child().attr('style')
-#     print(img)
-#     zhengze = r'"([^"]*)"|'r'\'([^\']*)\''
-#     imgZhengZe = [m[0] for m in (re.findall(zhengze, img)) if m[0]]
-#     imgList.append(imgZhengZe[0])
-
-
-result = '(相似度:23.4%)'
-result = float(result[5:-2])
-print(result)
-if result < 25.00:
-    print('通过')
-else:
-    print('不通过')
