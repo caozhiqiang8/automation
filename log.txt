@@ -1,0 +1,32 @@
+﻿
+[2024-10-02 22:30:38]    Traceback (most recent call last):
+  File "d:\zdh\toutiao.py", line 107, in getArticle
+    page.get(url)
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 475, in get
+    self._url_available = self._d_connect(self._url, times=retry, interval=interval,
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 990, in _d_connect
+    result = self.run_cdp('Page.navigate', frameId=self._frame_id, url=to_url, _timeout=timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 424, in run_cdp
+    return r if __ERROR__ not in r else raise_error(r, ignore)
+                                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_functions\tools.py", line 241, in raise_error
+    raise r
+DrissionPage.errors.WrongURLError: 无效的url：---%E5%88%87%E6%8D%A2---。也许要加上"http://"？
+
+[2024-10-02 22:33:07]    Traceback (most recent call last):
+  File "d:\zdh\toutiao.py", line 107, in getArticle
+    page.get(url)
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 475, in get
+    self._url_available = self._d_connect(self._url, times=retry, interval=interval,
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 990, in _d_connect
+    result = self.run_cdp('Page.navigate', frameId=self._frame_id, url=to_url, _timeout=timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 424, in run_cdp
+    return r if __ERROR__ not in r else raise_error(r, ignore)
+                                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_functions\tools.py", line 241, in raise_error
+    raise r
+DrissionPage.errors.WrongURLError: 无效的url：---%E5%88%87%E6%8D%A2---。也许要加上"http://"？

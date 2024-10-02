@@ -5,7 +5,8 @@ import sqlite3
 from datetime import datetime
 import traceback
 import base64
-
+import pyautogui
+import re
 
 def nowTime():
     now = datetime.strptime((datetime.now().strftime('%Y-%m-%d %H:%M:%S')), '%Y-%m-%d %H:%M:%S')
@@ -63,13 +64,13 @@ def secretKey(cdk):
         result = cursor.execute(sql).fetchall()
         if result:
             if etime < nowTime():
-                runJs('已到期，请联系作者：syy180806')
+                pyautogui.alert(text='没有权限，请联系作者：syy180806', title='警告', button='我知道了')
                 sys.exit()
         else:
-            runJs('没有权限，请联系作者：syy180806')
+            pyautogui.alert(text='没有权限，请联系作者：syy180806', title='警告', button='我知道了')
             sys.exit()
     else:
-        runJs('没有权限，请联系作者：syy180806')
+        pyautogui.alert(text='没有权限，请联系作者：syy180806', title='警告', button='我知道了')
         sys.exit()
     cursor.close()
     conn.close()
@@ -82,7 +83,7 @@ def getArticleUrl(cdk,navItem,scrollNum = 0):
     page.get('https://www.toutiao.com/')
     login = page.ele('xpath://*[@id="root"]/div/div[3]/div[2]/a')
     if login:
-        runJs('请先登录，并且重新运行程序')
+        pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
         sys.exit()
     print('[{}] 开始自动采集 {} 文章......'.format(nowTime(),navItem))
     page.ele('xpath://*[@id="root"]/div/div[5]/div[1]/div/div/div/div[1]/div/ul/li[9]/div[1]').click()
@@ -102,9 +103,9 @@ def getArticleUrl(cdk,navItem,scrollNum = 0):
 
 def getArticle(cdk,url):
     secretKey(cdk)
-    page.get(url)
-    redirectUrl = page.url
     try:
+        page.get(url)
+        redirectUrl = page.url
         if 'https://www.toutiao.com' in redirectUrl :
             connect = page.ele('xpath://*[@id="root"]/div[2]/div[2]/div[1]/div/div/div/div/article').text
             title = page.ele('@class=article-content').ele('tag:h1').text
@@ -159,13 +160,13 @@ def aiRewrite(cdk,article,aiType):
     try:
         aiPromat = fileOperate(fileName='AI指令.txt', fileType='r',readType='read')
         if len(aiPromat) < 5:
-            runJs('请检查指令是否正确，字符数必须大于5')
+            pyautogui.alert(text='请检查指令是否正确，字符数必须大于5', title='警告', button='我知道了')
             sys.exit()
         if aiType == 'wenxin':
             page.get('https://yiyan.baidu.com/')
             login = page.ele('xpath://*[@id="root"]/div[1]/div[2]/div/div[2]/div/div')
             if login:
-                runJs('请先登录，并且重新运行程序')
+                pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
             page.ele('.yc-editor-paragraph').input(article)
             page.wait(1)
@@ -181,17 +182,19 @@ def aiRewrite(cdk,article,aiType):
             page.get('https://tongyi.aliyun.com/')
             login = page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[1]/div/div/div[3]/button')
             if login:
-                runJs('请先登录，并且重新运行程序')
+                pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
             page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[2]/div[1]/div[3]/div[4]/div[1]/div/textarea').input(article)
-            ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[2]/div[1]/div[3]/div[4]/div[2]/span',timeout=120).click()
+            # ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
             page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div[2]/div[2]/div[2]/div[3]',timeout=120)
             page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[2]/div[1]/div[3]/div[4]/div[1]/div/textarea').input(aiPromat)
-            ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            # ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[2]/div[1]/div[3]/div[4]/div[2]/span',timeout=120).click()
             page.ele('xpath://*[@id="tongyiPageLayout"]/div[3]/div/div[2]/div[1]/div[2]/div[1]/div/div/div[4]/div[2]/div[2]/div[2]/div[3]',timeout=120).click()
     except Exception:
         fileOperate(fileName=r'log.txt',fileType='a',readType='write')
-        runJs('请先登录，并且重新运行程序')
+        pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
         sys.exit()
 
 def articleContrast(cdk,originalText,contrastType='meibp'):
@@ -201,7 +204,7 @@ def articleContrast(cdk,originalText,contrastType='meibp'):
             page.get('https://ai.meibp.com/diff.html')
             login = page.ele('xpath://*[@id="nav-container"]/div[2]/a')
             if  login:
-                runJs('请先登录，并且重新运行程序')
+                pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
             page.ele('xpath://*[@id="source2"]').click()
             ac.type(Keys.CTRL_V)
@@ -213,7 +216,7 @@ def articleContrast(cdk,originalText,contrastType='meibp'):
                 print('[{}] 检测结果：{}'.format(nowTime(), result))
                 return 0
             elif result == 100.0:
-                runJs('请检查检测网站是否正常')
+                pyautogui.alert(text='请检查检测网站是否正常', title='警告', button='我知道了')
                 sys.exit()
             else:
                 print('[{}] 检测结果：{}'.format(nowTime(), result))
@@ -242,7 +245,7 @@ def articleContrast(cdk,originalText,contrastType='meibp'):
 
 if __name__=='__main__':
     fileOperate(fileName='log.txt', fileType='w',readType='truncate')
-    page = ChromiumPage(timeout=100)
+    
     try:
         fileLines = fileOperate(fileName=r'config.txt', fileType='r',readType='readlines')
         config = {}
@@ -270,11 +273,17 @@ if __name__=='__main__':
             contrastType = 'wenpp'
         else:
             contrastType = 'meibp'
+        dataPath = config['dataPath']
+        localPort = config['localPort']
+        localPort = re.split(',',localPort)
+
     except Exception:
         fileOperate(fileName=r'log.txt',fileType='a',readType='write')
-        runJs('配置文件加载失败，请联系作者：syy180806')
+        pyautogui.alert(text='配置文件加载失败，请联系作者：syy180806', title='警告', button='我知道了')
         sys.exit()
-
+        
+    do = ChromiumOptions().set_paths(local_port=9222, user_data_path='{}:\\userData_9222'.format(dataPath))
+    page = ChromiumPage(timeout=100,addr_or_opts=do)
     page.set.timeouts(int(timOut))
     secretKey(cdk)
     ac = Actions(page)
@@ -291,10 +300,28 @@ if __name__=='__main__':
         fileUrl = fileOperate(fileName=r'文章链接.txt', fileType='r',readType='read')
         articleUrlList = fileUrl.splitlines()
 
-
     successNum = 0
     contrastNum = 0
+    switchProjectNum = 0
     for url in articleUrlList:
+        if url == '---头条---':
+            publishType ='0'
+        elif url == '---公众号---':
+            publishType ='1'    
+        elif url == '---百家号---':
+            publishType ='2'
+        elif url =='---切换---':
+            print('切换帐号')
+            page.wait(1)
+            page.close()
+            do = ChromiumOptions().set_paths(local_port=int(localPort[switchProjectNum]), user_data_path='{}:\\userData_{}'.format(dataPath,int(localPort[switchProjectNum])))
+            page = ChromiumPage(addr_or_opts=do)
+            page.set.timeouts(int(timOut))
+            secretKey(cdk)
+            ac = Actions(page)
+            page.set.window.max()
+            switchProjectNum +=1
+            
         print('[{}] 开始获取文章内容......'.format(nowTime()))
         article, title, imgList = getArticle(cdk, url)
         # print(article,title,imgList)
@@ -326,7 +353,7 @@ if __name__=='__main__':
             page.get('https://mp.toutiao.com/profile_v4/index')
             login = page.ele('xpath://*[@id="BD_Login_Form"]/div/article/article/div[1]/div[1]/div[2]/article/div[5]/button')
             if login:
-                runJs('请先登录，并且重新运行程序')
+                pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
             try:
                 page.ele('@class=byte-menu-item').click()
@@ -379,7 +406,7 @@ if __name__=='__main__':
                 page.get('https://editor.mdnice.com/')
                 login = page.ele('xpath:/html/body/div[2]/div/div[2]/div/div[2]/div')
                 if login:
-                    runJs('请先登录，并且重新运行程序')
+                    pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                     sys.exit()
                 page.ele('xpath://*[@id="article-sidebar-container"]/div/div/div[2]/div/div/div/ul/li').click()
                 page.wait(1)
@@ -394,7 +421,7 @@ if __name__=='__main__':
                 page.get('https://mp.weixin.qq.com/')
                 login = page.ele('xpath://*[@id="header"]/div[2]/div/div/div[2]/a')
                 if login:
-                    runJs('请先登录，并且重新运行程序')
+                    pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                     sys.exit()
                 page.ele('xpath://*[@id="app"]/div[2]/div[3]/div[2]/div/div[2]').click()
                 editPage = page.latest_tab
@@ -432,11 +459,13 @@ if __name__=='__main__':
                         editPage.wait(1)
                         editAc.type(Keys.CTRL_V)
                         editPage.wait(1)
+                        editAc.type(Keys.ENTER)
                         imgNum = imgNum + 2
                 else:
                     pass
                 editPage.ele('xpath://*[@id="js_submit"]/button').click()
                 editPage.wait(3)
+                editPage.close()
             except Exception:
                 fileOperate(fileName=r'log.txt',fileType='a',readType='write')
                 print('[{}] 写入失败，网络加载太慢'.format(nowTime()))
@@ -445,7 +474,7 @@ if __name__=='__main__':
             page.get('https://editor.mdnice.com/')
             login = page.ele('xpath:/html/body/div[2]/div/div[2]/div/div[2]/div')
             if login:
-                runJs('请先登录，并且重新运行程序')
+                pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
             page.ele('xpath://*[@id="article-sidebar-container"]/div/div/div[2]/div/div/div/ul/li').click()
             page.wait(1)
@@ -460,13 +489,23 @@ if __name__=='__main__':
             page.get('https://baijiahao.baidu.com/')
             login = page.ele('xpath://*[@id="root"]/div/div/div[1]/div[2]/div[2]/div')
             if login:
-                runJs('请先登录，并且重新运行程序')
+                pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
             page.ele('xpath://*[@id="layout-main-aside"]/div/aside/div/button').click()
             page.wait(1)
-            page.ele('@id=edui1_iframeholder').click()
+            nice = page.ele('@id=nice')
+            if nice :
+                nice.child(1).click()
+            else:
+                page.ele('xpath:/html/body/p').click()
+            page.wait(1)
+            ac.type(Keys.CTRL_A)
             page.wait(1)
             ac.type(Keys.CTRL_V)
+            page.wait(1)
+            page.ele('xpath://*[@id="newsTextArea"]/div/div/div/div/div/div/div[1]/div/div[1]/textarea').click()
+            page.wait(1)
+            ac.type(Keys.CTRL_A)
             page.wait(1)
             page.ele('xpath://*[@id="newsTextArea"]/div/div/div/div/div/div/div[1]/div/div[1]/textarea').input(title)
             page.wait(1)
@@ -483,15 +522,16 @@ if __name__=='__main__':
                     newpage.wait(1)
                     newpage.close()
                     newpage.wait(1)
-                    lenProse = page.ele('xpaht://*[@id="nice"]')
+                    lenProse = page.ele('@id=nice')
                     if imgNum > len(lenProse.children()):
                         imgNum = len(lenProse.children())
+                    newpage.wait(1)
                     lenProse.child(imgNum).click.at(0, 0)
                     page.wait(1)
                     ac.key_down(Keys.HOME).key_up(Keys.HOME)
                     page.wait(1)
                     ac.type(Keys.CTRL_V)
-                    imgNum = imgNum + 4
+                    imgNum = imgNum + 3
             page.wait(1)
             page.ele('xpath:/html/body/div[4]/div/div/div[2]/div/div/div[2]/span/div[4]/button').click()
             page.wait(3)
@@ -511,4 +551,4 @@ if __name__=='__main__':
             fileUrl = fileOperate(fileName=r'文章链接.txt', fileType='r', readType='read')
             delUrl = fileUrl.replace(url, '')
             fileOperate(fileName=r'文章链接.txt', fileType='w', readType='write', msg=delUrl)
-    runJs('程序运行完毕，一共洗稿 {} 条'.format(successNum))
+pyautogui.alert(text='程序运行完毕，一共洗稿 {} 条'.format(successNum), title='警告', button='我知道了')
