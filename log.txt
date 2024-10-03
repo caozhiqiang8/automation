@@ -1,5 +1,5 @@
 ﻿
-[2024-10-02 22:30:38]    Traceback (most recent call last):
+[2024-10-03 21:14:47]    Traceback (most recent call last):
   File "d:\zdh\toutiao.py", line 107, in getArticle
     page.get(url)
   File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 475, in get
@@ -13,9 +13,9 @@
                                         ^^^^^^^^^^^^^^^^^^^^^^
   File "D:\Python\Python312\Lib\site-packages\DrissionPage\_functions\tools.py", line 241, in raise_error
     raise r
-DrissionPage.errors.WrongURLError: 无效的url：---%E5%88%87%E6%8D%A2---。也许要加上"http://"？
+DrissionPage.errors.WrongURLError: 无效的url：---%E5%85%AC%E4%BC%97%E5%8F%B7---。也许要加上"http://"？
 
-[2024-10-02 22:33:07]    Traceback (most recent call last):
+[2024-10-03 21:14:48]    Traceback (most recent call last):
   File "d:\zdh\toutiao.py", line 107, in getArticle
     page.get(url)
   File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 475, in get
@@ -29,4 +29,4 @@ DrissionPage.errors.WrongURLError: 无效的url：---%E5%88%87%E6%8D%A2---。也
                                         ^^^^^^^^^^^^^^^^^^^^^^
   File "D:\Python\Python312\Lib\site-packages\DrissionPage\_functions\tools.py", line 241, in raise_error
     raise r
-DrissionPage.errors.WrongURLError: 无效的url：---%E5%88%87%E6%8D%A2---。也许要加上"http://"？
+DrissionPage.errors.WrongURLError: 无效的url：---%E7%99%BE%E5%AE%B6%E5%8F%B7---。也许要加上"http://"？

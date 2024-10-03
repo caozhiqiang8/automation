@@ -273,17 +273,20 @@ if __name__=='__main__':
             contrastType = 'wenpp'
         else:
             contrastType = 'meibp'
-        dataPath = config['dataPath']
-        localPort = config['localPort']
-        localPort = re.split(',',localPort)
+            
+        if 'dataPath' in config:
+            dataPath = config['dataPath']
+        if 'localPort' in config:
+            localPort = config['localPort']
+            localPort = re.split(',',localPort) 
 
+        
     except Exception:
         fileOperate(fileName=r'log.txt',fileType='a',readType='write')
         pyautogui.alert(text='配置文件加载失败，请联系作者：syy180806', title='警告', button='我知道了')
         sys.exit()
         
-    do = ChromiumOptions().set_paths(local_port=9222, user_data_path='{}:\\userData_9222'.format(dataPath))
-    page = ChromiumPage(timeout=100,addr_or_opts=do)
+    page = ChromiumPage(timeout=100)
     page.set.timeouts(int(timOut))
     secretKey(cdk)
     ac = Actions(page)
@@ -305,13 +308,17 @@ if __name__=='__main__':
     switchProjectNum = 0
     for url in articleUrlList:
         if url == '---头条---':
+            print('切换到头条')
             publishType ='0'
         elif url == '---公众号---':
+            print('切换到公众号')
             publishType ='1'    
         elif url == '---百家号---':
+            print('切换到百家')
             publishType ='2'
         elif url =='---切换---':
             print('切换帐号')
+            publishType = config['发布平台【0头条】【1公众号】【2百家号】']
             page.wait(1)
             page.close()
             do = ChromiumOptions().set_paths(local_port=int(localPort[switchProjectNum]), user_data_path='{}:\\userData_{}'.format(dataPath,int(localPort[switchProjectNum])))
@@ -335,6 +342,7 @@ if __name__=='__main__':
             article = article[:2000]
         print('[{}] 文章标题、内容、图片获取成功'.format(nowTime()))
         for i in range(3):
+            
             print('[{}] 开始AI改写......'.format(nowTime()))
             aiRewrite(cdk=cdk, article=article, aiType=aiType)
             print('[{}] AI洗稿成功'.format(nowTime()))
@@ -423,7 +431,13 @@ if __name__=='__main__':
                 if login:
                     pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                     sys.exit()
-                page.ele('xpath://*[@id="app"]/div[2]/div[3]/div[2]/div/div[2]').click()
+                newCreation = page.ele('xpath://*[@id="app"]/div[2]/div[3]/div[2]/div')
+                for i in newCreation.children():
+                    if i.text == '图文消息':
+                        i.click()
+                        break
+                    else:
+                        print('meizhaodao')
                 editPage = page.latest_tab
                 editAc = Actions(editPage)
                 editPage.wait(3)
