@@ -305,7 +305,6 @@ if __name__=='__main__':
 
     successNum = 0
     contrastNum = 0
-    switchProjectNum = 0
     for url in articleUrlList:
         if url == '---头条---':
             print('切换到头条')
@@ -316,12 +315,16 @@ if __name__=='__main__':
         elif url == '---百家号---':
             print('切换到百家')
             publishType ='2'
-        elif url =='---切换---':
-            print('切换帐号')
+        elif '切换' in url:
+            switchProject = int((url.replace('-','')).replace('切换',''))
+            print('切换帐号到 ｛｝'.format(switchProject))
+            if switchProject not in localPort:
+                pyautogui.alert(text='切换帐号失败，请检查配置是否正确', title='警告', button='我知道了')
+                sys.exit()
             publishType = config['发布平台【0头条】【1公众号】【2百家号】']
             page.wait(1)
             page.close()
-            do = ChromiumOptions().set_paths(local_port=int(localPort[switchProjectNum]), user_data_path='{}:\\userData_{}'.format(dataPath,int(localPort[switchProjectNum])))
+            do = ChromiumOptions().set_paths(local_port=switchProject, user_data_path='{}:\\userData\\userData_{}'.format(dataPath,switchProject))
             page = ChromiumPage(addr_or_opts=do)
             page.set.timeouts(int(timOut))
             secretKey(cdk)
@@ -387,6 +390,9 @@ if __name__=='__main__':
                     for img in imgList:
                         newpage = page.new_tab(img)
                         newpage.wait(1)
+                        if newpage.url =='about:blank':
+                            newpage.close()
+                            continue
                         newpage.ele('tag:img').click()
                         new_ac = Actions(newpage)
                         newpage.wait(1)
@@ -455,9 +461,12 @@ if __name__=='__main__':
                 if len(imgList) > 0:
                     for img in imgList:
                         newpage = page.new_tab(img)
-                        newpage.wait(1)
-                        newpage.ele('tag:img').click()
                         new_ac = Actions(newpage)
+                        newpage.wait(1)
+                        if newpage.url =='about:blank':
+                            newpage.close()
+                            continue
+                        newpage.ele('tag:img').click()
                         newpage.wait(1)
                         new_ac.type(Keys.CTRL_C)
                         newpage.wait(1)
@@ -528,9 +537,12 @@ if __name__=='__main__':
             if len(imgList) > 0:
                 for img in imgList:
                     newpage = page.new_tab(img)
-                    newpage.wait(1)
-                    newpage.ele('tag:img').click()
                     new_ac = Actions(newpage)
+                    newpage.wait(1)
+                    if newpage.url =='about:blank':
+                        newpage.close()
+                        continue
+                    newpage.ele('tag:img').click()
                     newpage.wait(1)
                     new_ac.type(Keys.CTRL_C)
                     newpage.wait(1)
