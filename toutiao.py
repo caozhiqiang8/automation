@@ -280,7 +280,6 @@ if __name__=='__main__':
             localPort = config['localPort']
             localPort = re.split(',',localPort) 
 
-        
     except Exception:
         fileOperate(fileName=r'log.txt',fileType='a',readType='write')
         pyautogui.alert(text='配置文件加载失败，请联系作者：syy180806', title='警告', button='我知道了')
@@ -316,21 +315,22 @@ if __name__=='__main__':
             print('切换到百家')
             publishType ='2'
         elif '切换' in url:
-            switchProject = int((url.replace('-','')).replace('切换',''))
-            print('切换帐号到 ｛｝'.format(switchProject))
+            # switchProject = (url.replace('-','')).replace('切换','')
+            switchProject = (re.findall(r'\d+',url))[0]
+            print('切换帐号到 {}'.format(switchProject))
             if switchProject not in localPort:
                 pyautogui.alert(text='切换帐号失败，请检查配置是否正确', title='警告', button='我知道了')
                 sys.exit()
             publishType = config['发布平台【0头条】【1公众号】【2百家号】']
             page.wait(1)
             page.close()
+            switchProject = int(switchProject)
             do = ChromiumOptions().set_paths(local_port=switchProject, user_data_path='{}:\\userData\\userData_{}'.format(dataPath,switchProject))
             page = ChromiumPage(addr_or_opts=do)
             page.set.timeouts(int(timOut))
             secretKey(cdk)
             ac = Actions(page)
             page.set.window.max()
-            switchProjectNum +=1
             
         print('[{}] 开始获取文章内容......'.format(nowTime()))
         article, title, imgList = getArticle(cdk, url)
@@ -373,13 +373,13 @@ if __name__=='__main__':
                 prose.click()
                 ac.type(Keys.CTRL_V)
                 page.wait(1)
-                proseHr = prose.eles('tag:hr')
-                for i in range(len(proseHr)):
-                    page.remove_ele(prose.ele('tag:hr'))
-                proseStrong = prose.eles('tag:strong')
-                for i in range(len(proseStrong)):
-                    page.remove_ele(prose.ele('tag:strong').parent())
-                page.wait(1)
+                # proseHr = prose.eles('tag:hr')
+                # for i in range(len(proseHr)):
+                #     page.remove_ele(prose.ele('tag:hr'))
+                # proseStrong = prose.eles('tag:strong')
+                # for i in range(len(proseStrong)):
+                #     page.remove_ele(prose.ele('tag:strong').parent())
+                # page.wait(1)
                 page.scroll.to_top()
                 page.wait(1)
                 page.ele('xpath://*[@id="root"]/div/div[1]/div/div[1]/div[3]/div/div/div[2]/div/div/div/textarea').input(title)
@@ -443,7 +443,7 @@ if __name__=='__main__':
                         i.click()
                         break
                     else:
-                        print('meizhaodao')
+                        pass
                 editPage = page.latest_tab
                 editAc = Actions(editPage)
                 editPage.wait(3)
