@@ -274,15 +274,15 @@ if __name__=='__main__':
         else:
             contrastType = 'meibp'
             
-        if 'dataPath' in config:
-            dataPath = config['dataPath']
-        if 'localPort' in config:
-            localPort = config['localPort']
+        if '磁盘' in config:
+            dataPath = config['磁盘']
+        if '多开' in config:
+            localPort = config['多开']
             localPort = re.split(',',localPort) 
 
     except Exception:
         fileOperate(fileName=r'log.txt',fileType='a',readType='write')
-        pyautogui.alert(text='配置文件加载失败，请联系作者：syy180806', title='警告', button='我知道了')
+        pyautogui.alert(text='【10001】请联系作者：syy180806', title='警告', button='我知道了')
         sys.exit()
         
     page = ChromiumPage(timeout=100)
@@ -357,6 +357,9 @@ if __name__=='__main__':
             contrastNum += 1
         if contrastNum > 2:
             print('[{}] 文章3次未通过检测自动跳过'.format(nowTime()))
+            fileUrl = fileOperate(fileName=r'文章链接.txt', fileType='r', readType='read')
+            delUrl = fileUrl.replace(url, '')
+            fileOperate(fileName=r'文章链接.txt', fileType='w', readType='write', msg=delUrl)
             contrastNum = 0
             continue
         if publishType =='0':
@@ -387,6 +390,7 @@ if __name__=='__main__':
                 print('[{}] 开始插入图片......'.format(nowTime()))
                 imgNum = 3
                 if len(imgList) >0:
+                
                     for img in imgList:
                         newpage = page.new_tab(img)
                         newpage.wait(1)
@@ -411,6 +415,7 @@ if __name__=='__main__':
                         imgNum = imgNum + 2
                 else:
                     pass
+                page.wait(3)
             except Exception:
                 fileOperate(fileName=r'log.txt',fileType='a',readType='write')
                 print('[{}] 写入失败，网络加载太慢'.format(nowTime()))
