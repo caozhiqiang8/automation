@@ -133,6 +133,11 @@ def getArticle(cdk,url):
             title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
             img = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').eles('tag:img')
             imgList = img.get.links()
+        elif 'https://news.qq.com/' in redirectUrl  :
+            connect = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').text
+            title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
+            img = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').eles('tag:img')
+            imgList = img.get.links()
         elif 'https://view.inews.qq.com/' in redirectUrl:
             connect = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').text
             title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
@@ -285,7 +290,8 @@ if __name__=='__main__':
         pyautogui.alert(text='【10001】请联系作者：syy180806', title='警告', button='我知道了')
         sys.exit()
         
-    page = ChromiumPage(timeout=100)
+    do = ChromiumOptions().set_paths(local_port=9222, user_data_path='{}:\\userData\\userData_{}'.format(dataPath,9222))
+    page = ChromiumPage(timeout=100,addr_or_opts=do)
     page.set.timeouts(int(timOut))
     secretKey(cdk)
     ac = Actions(page)
@@ -357,9 +363,6 @@ if __name__=='__main__':
             contrastNum += 1
         if contrastNum > 2:
             print('[{}] 文章3次未通过检测自动跳过'.format(nowTime()))
-            fileUrl = fileOperate(fileName=r'文章链接.txt', fileType='r', readType='read')
-            delUrl = fileUrl.replace(url, '')
-            fileOperate(fileName=r'文章链接.txt', fileType='w', readType='write', msg=delUrl)
             contrastNum = 0
             continue
         if publishType =='0':
@@ -444,7 +447,7 @@ if __name__=='__main__':
                     sys.exit()
                 newCreation = page.ele('xpath://*[@id="app"]/div[2]/div[3]/div[2]/div')
                 for i in newCreation.children():
-                    if i.text == '图文消息':
+                    if i.text == '文章':
                         i.click()
                         break
                     else:
