@@ -7,13 +7,19 @@ import re
 page = ChromiumPage()
 ac = Actions(page)
 
+page.ele('xpath://*[@id="nice-md-editor"]/div/div[6]').click()
+page.wait(1)
+ac.key_down(Keys.CTRL).type('A').key_up(Keys.CTRL)
+page.wait(1)
+ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+page.wait(1)
 # page.ele('@id:kw').input((Keys.CTRL,'V'))
 # page.ele('tag:img').input((Keys.CTRL,'C'))
 
-aa = (page.ele('@class:ProseMirror')).child(1).click.at(0,0)
+# aa = (page.ele('@class:ProseMirror')).child(1).click.at(0,0)
 
 # aa.input((Keys.HOME))
-ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+# ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
 
 # connect = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').text
 # title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text

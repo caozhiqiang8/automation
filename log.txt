@@ -1,0 +1,16 @@
+﻿
+[2024-11-01 21:50:04]    Traceback (most recent call last):
+  File "d:\zdh\toutiao.py", line 107, in getArticle
+    page.get(url)
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 475, in get
+    self._url_available = self._d_connect(self._url, times=retry, interval=interval,
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 990, in _d_connect
+    result = self.run_cdp('Page.navigate', frameId=self._frame_id, url=to_url, _timeout=timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_pages\chromium_base.py", line 424, in run_cdp
+    return r if __ERROR__ not in r else raise_error(r, ignore)
+                                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\site-packages\DrissionPage\_functions\tools.py", line 241, in raise_error
+    raise r
+DrissionPage.errors.WrongURLError: 无效的url：---%E5%85%AC%E4%BC%97%E5%8F%B7---。也许要加上"http://"？
