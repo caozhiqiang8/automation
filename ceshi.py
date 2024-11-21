@@ -1,36 +1,58 @@
 from DrissionPage import ChromiumPage
 from DrissionPage.common import Actions,Keys
 import pyautogui
+import tkinter as tk
+from tkinter import ttk
+import re 
+page = ChromiumPage()
+ac = Actions(page)
+
+page.ele('xpath://*[@id="nice-md-editor"]/div/div[6]').click()
+page.wait(1)
+ac.key_down(Keys.CTRL).type('A').key_up(Keys.CTRL)
+page.wait(1)
+ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+page.wait(1)
+# page.ele('@id:kw').input((Keys.CTRL,'V'))
+# page.ele('tag:img').input((Keys.CTRL,'C'))
+
+# aa = (page.ele('@class:ProseMirror')).child(1).click.at(0,0)
+
+# aa.input((Keys.HOME))
+# ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+
+# connect = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').text
+# title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
+# img = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').eles('tag:img')
+# print(img)
+# imgList = img.get.links()
+# print(imgList)
 
 
-# page = ChromiumPage()
-# ac = Actions(page)
-# page.get('https://www.baidu.com')
-# page.wait(1)
+# mainWindow = tk.Tk()
+# mainWindow.title('自动化')
+# mainWindow.geometry('600x800')
 
 
-# pyautogui.hotkey('shift', 'ctrl','m')
-# pyautogui.hotkey('down')
-# pyautogui.hotkey('enter')
-# page.close()
-# new = page.latest_tab
-# new.get('https://www.hao123.com')
-# pyautogui.alert(text='结束', title='title', button='alert')
+# releaseType = tk.StringVar(value='0')
+# label = tk.Label(mainWindow, text="发布平台")
+# label.pack()
+# radio_button1 = tk.Radiobutton(mainWindow, text='发布平台',variable=releaseType,value='0',anchor='nw',padx=20, pady=20,)
+# radio_button1.pack()
+# radio_button2 = tk.Radiobutton(mainWindow, text='公众号',variable=releaseType,value='1',anchor='nw',padx=20, pady=20)
+# radio_button2.pack()
 
-from DrissionPage import ChromiumPage, ChromiumOptions
+# publishType = tk.StringVar(value='0')
+# radio_button1 = tk.Radiobutton(mainWindow, text='头条',variable=publishType,value='0',anchor='w',padx=20, pady=20)
+# radio_button1.pack(side=tk.LEFT)
+# radio_button2 = tk.Radiobutton(mainWindow, text='公众号',variable=publishType,value='1',anchor='w',padx=20, pady=20)
+# radio_button2.pack(side=tk.LEFT)
+# radio_button3 = tk.Radiobutton(mainWindow, text='百家号',variable=publishType,value='2',anchor='w',padx=20, pady=20)
+# radio_button3.pack(side=tk.LEFT)
 
-# 创建多个配置对象，每个指定不同的端口号和用户文件夹路径
 
-localList = {
-    'local_port':[9111,9222],
-    'user_data_path' : [r'D:\userData_9111',r'D:\userData_9222'],
-}
-do = ChromiumOptions().set_paths(local_port=localList['local_port'][0], user_data_path=localList['user_data_path'][0])
-page = ChromiumPage(addr_or_opts=do)
-page.get('https://www.baidu.com')
+# button = tk.Button(mainWindow, text="点击我")
+# button.pack()
 
-page.close()
-do = ChromiumOptions().set_paths(local_port=localList['local_port'][0], user_data_path=localList['user_data_path'][0])
-page = ChromiumPage(addr_or_opts=do)
+# mainWindow.mainloop()
 
-page.get('http://www.163.com')

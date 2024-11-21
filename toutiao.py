@@ -133,6 +133,11 @@ def getArticle(cdk,url):
             title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
             img = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').eles('tag:img')
             imgList = img.get.links()
+        elif 'https://news.qq.com/' in redirectUrl  :
+            connect = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').text
+            title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
+            img = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').eles('tag:img')
+            imgList = img.get.links()
         elif 'https://view.inews.qq.com/' in redirectUrl:
             connect = page.ele('xpath://*[@id="ArticleContent"]/div[2]/div').text
             title = page.ele('xpath://*[@id="dc-normal-body"]/div[3]/div[1]/div[1]/div[2]/h1').text
@@ -170,11 +175,13 @@ def aiRewrite(cdk,article,aiType):
                 sys.exit()
             page.ele('.yc-editor-paragraph').input(article)
             page.wait(1)
-            ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            # ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            page.ele('@id=sendBtn').click()
             page.wait(2)
             page.wait.ele_hidden((page.ele('@id=sendBtn')).next(),timeout=120)
             page.ele('.yc-editor-paragraph').input(aiPromat)
-            ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            # ac.key_down(Keys.ENTER).key_up(Keys.ENTER)
+            page.ele('@id=sendBtn').click()
             page.wait.ele_hidden((page.ele('@id=sendBtn')).next(),timeout=120)
             page.ele('@id:chat-id-').eles('tag:span')[3].click()
 
@@ -206,8 +213,7 @@ def articleContrast(cdk,originalText,contrastType='meibp'):
             if  login:
                 pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                 sys.exit()
-            page.ele('xpath://*[@id="source2"]').click()
-            ac.type(Keys.CTRL_V)
+            page.ele('xpath://*[@id="source2"]').input((Keys.CTRL,'V'))
             page.ele('xpath://*[@id="source1"]').input(originalText)
             page.ele('xpath://*[@id="button"]').click()
             result = page.ele('xpath://*[@id="result"]/span').text
@@ -227,8 +233,7 @@ def articleContrast(cdk,originalText,contrastType='meibp'):
             updateBox = page.ele('@id=TurnOnScreenDialogBoxCloseId')
             if updateBox:
                 updateBox.click()
-            page.ele('@id=content2').click()
-            ac.type(Keys.CTRL_V)
+            page.ele('@id=content2').input((Keys.CTRL,'V'))
             page.ele('@id=content1').input(originalText)
             page.ele('@id=animation-container').click()
             page.wait(2)
@@ -273,16 +278,19 @@ if __name__=='__main__':
             contrastType = 'wenpp'
         else:
             contrastType = 'meibp'
-        dataPath = config['dataPath']
-        localPort = config['localPort']
-        localPort = re.split(',',localPort)
+            
+        if '磁盘' in config:
+            dataPath = config['磁盘']
+        if '多开' in config:
+            localPort = config['多开']
+            localPort = re.split(',',localPort) 
 
     except Exception:
         fileOperate(fileName=r'log.txt',fileType='a',readType='write')
-        pyautogui.alert(text='配置文件加载失败，请联系作者：syy180806', title='警告', button='我知道了')
+        pyautogui.alert(text='【10001】请联系作者：syy180806', title='警告', button='我知道了')
         sys.exit()
         
-    do = ChromiumOptions().set_paths(local_port=9222, user_data_path='{}:\\userData_9222'.format(dataPath))
+    do = ChromiumOptions().set_paths(local_port=9222, user_data_path='{}:\\userData\\userData_{}'.format(dataPath,9222))
     page = ChromiumPage(timeout=100,addr_or_opts=do)
     page.set.timeouts(int(timOut))
     secretKey(cdk)
@@ -302,25 +310,33 @@ if __name__=='__main__':
 
     successNum = 0
     contrastNum = 0
-    switchProjectNum = 0
     for url in articleUrlList:
         if url == '---头条---':
+            print('切换到头条')
             publishType ='0'
         elif url == '---公众号---':
+            print('切换到公众号')
             publishType ='1'    
         elif url == '---百家号---':
+            print('切换到百家')
             publishType ='2'
-        elif url =='---切换---':
-            print('切换帐号')
+        elif '切换' in url:
+            # switchProject = (url.replace('-','')).replace('切换','')
+            switchProject = (re.findall(r'\d+',url))[0]
+            print('切换帐号到 {}'.format(switchProject))
+            if switchProject not in localPort:
+                pyautogui.alert(text='切换帐号失败，请检查配置是否正确', title='警告', button='我知道了')
+                sys.exit()
+            publishType = config['发布平台【0头条】【1公众号】【2百家号】']
             page.wait(1)
             page.close()
-            do = ChromiumOptions().set_paths(local_port=int(localPort[switchProjectNum]), user_data_path='{}:\\userData_{}'.format(dataPath,int(localPort[switchProjectNum])))
+            switchProject = int(switchProject)
+            do = ChromiumOptions().set_paths(local_port=switchProject, user_data_path='{}:\\userData\\userData_{}'.format(dataPath,switchProject))
             page = ChromiumPage(addr_or_opts=do)
             page.set.timeouts(int(timOut))
             secretKey(cdk)
             ac = Actions(page)
             page.set.window.max()
-            switchProjectNum +=1
             
         print('[{}] 开始获取文章内容......'.format(nowTime()))
         article, title, imgList = getArticle(cdk, url)
@@ -335,6 +351,7 @@ if __name__=='__main__':
             article = article[:2000]
         print('[{}] 文章标题、内容、图片获取成功'.format(nowTime()))
         for i in range(3):
+            
             print('[{}] 开始AI改写......'.format(nowTime()))
             aiRewrite(cdk=cdk, article=article, aiType=aiType)
             print('[{}] AI洗稿成功'.format(nowTime()))
@@ -359,16 +376,15 @@ if __name__=='__main__':
                 page.ele('@class=byte-menu-item').click()
                 page.wait(1)
                 prose = page.ele('@class=ProseMirror')
-                prose.click()
-                ac.type(Keys.CTRL_V)
+                prose.input((Keys.CTRL,'V'))
                 page.wait(1)
-                proseHr = prose.eles('tag:hr')
-                for i in range(len(proseHr)):
-                    page.remove_ele(prose.ele('tag:hr'))
-                proseStrong = prose.eles('tag:strong')
-                for i in range(len(proseStrong)):
-                    page.remove_ele(prose.ele('tag:strong').parent())
-                page.wait(1)
+                # proseHr = prose.eles('tag:hr')
+                # for i in range(len(proseHr)):
+                #     page.remove_ele(prose.ele('tag:hr'))
+                # proseStrong = prose.eles('tag:strong')
+                # for i in range(len(proseStrong)):
+                #     page.remove_ele(prose.ele('tag:strong').parent())
+                # page.wait(1)
                 page.scroll.to_top()
                 page.wait(1)
                 page.ele('xpath://*[@id="root"]/div/div[1]/div/div[1]/div[3]/div/div/div[2]/div/div/div/textarea').input(title)
@@ -376,13 +392,17 @@ if __name__=='__main__':
                 print('[{}] 开始插入图片......'.format(nowTime()))
                 imgNum = 3
                 if len(imgList) >0:
+                
                     for img in imgList:
                         newpage = page.new_tab(img)
                         newpage.wait(1)
-                        newpage.ele('tag:img').click()
+                        if newpage.url =='about:blank':
+                            newpage.close()
+                            continue
+                        newpage.ele('tag:img').input((Keys.CTRL,'C'))
                         new_ac = Actions(newpage)
                         newpage.wait(1)
-                        new_ac.type(Keys.CTRL_C)
+                        # new_ac.type(Keys.CTRL_C)
                         newpage.wait(1)
                         newpage.close()
                         newpage.wait(1)
@@ -393,10 +413,12 @@ if __name__=='__main__':
                         page.wait(1)
                         ac.key_down(Keys.HOME).key_up(Keys.HOME)
                         page.wait(1)
-                        ac.type(Keys.CTRL_V)
+                        # ac.type(Keys.CTRL_V)
+                        ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
                         imgNum = imgNum + 2
                 else:
                     pass
+                page.wait(3)
             except Exception:
                 fileOperate(fileName=r'log.txt',fileType='a',readType='write')
                 print('[{}] 写入失败，网络加载太慢'.format(nowTime()))
@@ -412,9 +434,9 @@ if __name__=='__main__':
                 page.wait(1)
                 page.ele('xpath://*[@id="nice-md-editor"]/div/div[6]').click()
                 page.wait(1)
-                ac.type(Keys.CTRL_A)
+                ac.key_down(Keys.CTRL).type('A').key_up(Keys.CTRL)
                 page.wait(1)
-                ac.type(Keys.CTRL_V)
+                ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
                 page.wait(1)
                 page.ele('xpath://*[@id="nice-sidebar-wechat"]').click()
                 print('[{}] 公众号写入文章......'.format(nowTime()))
@@ -423,12 +445,18 @@ if __name__=='__main__':
                 if login:
                     pyautogui.alert(text='请先登录，并且重新运行程序', title='警告', button='我知道了')
                     sys.exit()
-                page.ele('xpath://*[@id="app"]/div[2]/div[3]/div[2]/div/div[2]').click()
+                newCreation = page.ele('xpath://*[@id="app"]/div[2]/div[3]/div[2]/div')
+                for i in newCreation.children():
+                    if i.text == '文章':
+                        i.click()
+                        break
+                    else:
+                        pass
                 editPage = page.latest_tab
                 editAc = Actions(editPage)
                 editPage.wait(3)
-                editPage.ele('@id=edui1_contentplaceholder').click()
-                editAc.type(Keys.CTRL_V)
+                editPage.ele('@id=edui1_contentplaceholder').input((Keys.CTRL,'V'))
+                # editAc.type(Keys.CTRL_V)
                 editPage.wait(1)
                 editPage.scroll.to_top()
                 editPage.wait(1)
@@ -441,11 +469,14 @@ if __name__=='__main__':
                 if len(imgList) > 0:
                     for img in imgList:
                         newpage = page.new_tab(img)
-                        newpage.wait(1)
-                        newpage.ele('tag:img').click()
                         new_ac = Actions(newpage)
                         newpage.wait(1)
-                        new_ac.type(Keys.CTRL_C)
+                        if newpage.url =='about:blank':
+                            newpage.close()
+                            continue
+                        newpage.ele('tag:img').input((Keys.CTRL,'C'))
+                        # newpage.wait(1)
+                        # new_ac.type(Keys.CTRL_C)
                         newpage.wait(1)
                         newpage.close()
                         newpage.wait(1)
@@ -457,9 +488,10 @@ if __name__=='__main__':
                         editPage.wait(1)
                         editAc.key_down(Keys.HOME).key_up(Keys.HOME)
                         editPage.wait(1)
-                        editAc.type(Keys.CTRL_V)
-                        editPage.wait(1)
-                        editAc.type(Keys.ENTER)
+                        editAc.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+                        # editAc.type(Keys.CTRL_V)
+                        # editPage.wait(1)
+                        # editAc.type(Keys.ENTER)
                         imgNum = imgNum + 2
                 else:
                     pass
@@ -478,11 +510,12 @@ if __name__=='__main__':
                 sys.exit()
             page.ele('xpath://*[@id="article-sidebar-container"]/div/div/div[2]/div/div/div/ul/li').click()
             page.wait(1)
-            page.ele('xpath://*[@id="nice-md-editor"]/div/div[6]').click()
+            page.ele('xpath://*[@id="nice-md-editor"]/div/div[6]').input((Keys.CTRL,'A'))
+            # page.wait(1)
+            # ac.type(Keys.CTRL_A)
             page.wait(1)
-            ac.type(Keys.CTRL_A)
-            page.wait(1)
-            ac.type(Keys.CTRL_V)
+            ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+            # ac.type(Keys.CTRL_V)
             page.wait(1)
             page.ele('xpath://*[@id="nice-sidebar-wechat"]').click()
             print('[{}] 百家号写入文章......'.format(nowTime()))
@@ -497,15 +530,16 @@ if __name__=='__main__':
             if nice :
                 nice.child(1).click()
             else:
-                page.ele('xpath:/html/body/p').click()
+                page.ele('xpath:/html/body/p').input((Keys.CTRL,'A'))
+            # page.wait(1)
+            # ac.type(Keys.CTRL_A)
             page.wait(1)
-            ac.type(Keys.CTRL_A)
+            ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+            # ac.type(Keys.CTRL_V)
             page.wait(1)
-            ac.type(Keys.CTRL_V)
-            page.wait(1)
-            page.ele('xpath://*[@id="newsTextArea"]/div/div/div/div/div/div/div[1]/div/div[1]/textarea').click()
-            page.wait(1)
-            ac.type(Keys.CTRL_A)
+            page.ele('xpath://*[@id="newsTextArea"]/div/div/div/div/div/div/div[1]/div/div[1]/textarea').input((Keys.CTRL,'A'))
+            # page.wait(1)
+            # ac.type(Keys.CTRL_A)
             page.wait(1)
             page.ele('xpath://*[@id="newsTextArea"]/div/div/div/div/div/div/div[1]/div/div[1]/textarea').input(title)
             page.wait(1)
@@ -514,11 +548,14 @@ if __name__=='__main__':
             if len(imgList) > 0:
                 for img in imgList:
                     newpage = page.new_tab(img)
-                    newpage.wait(1)
-                    newpage.ele('tag:img').click()
                     new_ac = Actions(newpage)
                     newpage.wait(1)
-                    new_ac.type(Keys.CTRL_C)
+                    if newpage.url =='about:blank':
+                        newpage.close()
+                        continue
+                    newpage.ele('tag:img').input((Keys.CTRL,'C'))
+                    # newpage.wait(1)
+                    # new_ac.type(Keys.CTRL_C)
                     newpage.wait(1)
                     newpage.close()
                     newpage.wait(1)
@@ -530,7 +567,8 @@ if __name__=='__main__':
                     page.wait(1)
                     ac.key_down(Keys.HOME).key_up(Keys.HOME)
                     page.wait(1)
-                    ac.type(Keys.CTRL_V)
+                    ac.key_down(Keys.CTRL).type('V').key_up(Keys.CTRL)
+                    # ac.type(Keys.CTRL_V)
                     imgNum = imgNum + 3
             page.wait(1)
             page.ele('xpath:/html/body/div[4]/div/div/div[2]/div/div/div[2]/span/div[4]/button').click()
